@@ -8,7 +8,7 @@ sum:
     sw $a0, 0($sp)			# sp[0] = a0
     slti $t0, $a0, 1			# t0 = (a0 < 1) ? 1 : 0
     beq $t0, $zero, L1		# if (t0 == 0) jump to Label: 'L1'
-    xor $v0, $zero, $zero	# v0 = 0 ^ 0 = 1
+    xor $v0, $zero, $zero	# v0 = 0 ^ 0 = 0
     addi $sp, $sp, 8			# sp += 8
     jr $ra					# jump to Register: $ra
 L1:
