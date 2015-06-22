@@ -32,11 +32,11 @@ module Control(OpCode, Funct,
 			|| (OpCode == 6'h00 && Funct == 6'h08))? 0: 1;
 
 	assign RegDst = 
-		(OpCode == 6'h03)? 2'b10:
+		(OpCode == 6'h03 || (OpCode == 6'h00 && Funct == 6'h09))? 2'b10:
 		(OpCode == 6'h23 || OpCode == 6'h0f || OpCode == 6'h08
 			|| OpCode == 6'h09 || OpCode == 6'h0c || OpCode == 6'h0a
-			|| OpCode == 6'h0b)? 2'b01: 
-		2'b00;
+			|| OpCode == 6'h0b)? 2'b00: 
+		2'b01;
 
 	assign MemRead = (OpCode == 6'h23)? 1: 0;
 
