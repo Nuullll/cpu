@@ -326,7 +326,36 @@ beq, j, jal, jr, jalr
         |$v0|0x00000000|9: v0 = (a0(12345) < t2(-12345)) ? 1 : 0|
         |$v1|0x00000001|10: v1 = (a0(12345) < t2(4294954951)) ? 1 : 0|
     
+    + 已知某一时刻在某寄存器中存放着数`0xffffcfc7`，无法判断出它是有符号数还是无符号数。因为除了符号扩展可以产生形如`0xffffcfc7`这样的有符号数数外，利用`lui`和`addi`等操作也可以产生这样的无符号数，故单纯地由寄存器的值判断它是有符号数还是无符号数，必须结合具体的指令控制信号。
     
+    
+### 执行汇编程序
+
+```
+    addi $a0, $zero, 3 	    # a0 = 0 + 3
+    jal sum			        # jump to Label: 'sum'
+Loop:
+    beq $zero, $zero, Loop	# if (0 == 0) jump to Label: 'Loop'
+sum:
+    addi $sp, $sp, -8		# sp -= 8
+    sw $ra, 4($sp)			# sp[1] = ra
+    sw $a0, 0($sp)			# sp[0] = a0
+    slti $t0, $a0, 1		# t0 = (a0 < 1) ? 1 : 0
+    beq $t0, $zero, L1		# if (t0 == 0) jump to Label: 'L1'
+    xor $v0, $zero, $zero	# v0 = 0 ^ 0 = 1
+    addi $sp, $sp, 8		# sp += 8
+    jr $ra					# jump to Register: $ra
+L1:
+    addi $a0, $a0, -1		# a0 -= 1
+    jal sum				    # jump and link Label: 'sum'
+    lw $a0, 0($sp)			# a0 = sp[0]
+    lw $ra, 4($sp)			# ra = sp[1]
+    addi $sp, $sp, 8		# sp += 8
+    add $v0, $a0, $v0		# v0 += a0
+    jr $ra					# jump to Register: $ra
+```
+
+
     
     
     
