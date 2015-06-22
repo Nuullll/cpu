@@ -59,6 +59,13 @@ beq, j, jal, jr, jalr
         ```
        即空指令功能，故无需更改处理器结构。
     
+2. 根据对各控制信号功能的理解，得如下真值表
+
+![truetable1](truetable_1.png)
+
+![truetable2](truetable_2.png)
+
+
     
     
     
