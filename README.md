@@ -67,9 +67,9 @@ beq, j, jal, jr, jalr
     
 2. 根据对各控制信号功能的理解，得如下真值表
 
-![truetable1](truetable_1.png)
+![truthtable1](truthtable_1.png)
 
-![truetable2](truetable_2.png)
+![truthtable2](truthtable_2.png)
 
 
 ### 完成控制器
