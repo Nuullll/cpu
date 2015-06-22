@@ -73,95 +73,173 @@ beq, j, jal, jr, jalr
     ```verilog
     
     module CPU(reset, clk);
-	input reset, clk;
+	    input reset, clk;
 	
-	reg [31:0] PC;
-	wire [31:0] PC_next;
-	always @(posedge reset or posedge clk)
-		if (reset)
-			PC <= 32'h00000000;
-		else
-			PC <= PC_next;
+	    reg [31:0] PC;
+	    wire [31:0] PC_next;
+	    always @(posedge reset or posedge clk)
+		    if (reset)
+			    PC <= 32'h00000000;
+		    else
+			    PC <= PC_next;
 	
-	wire [31:0] PC_plus_4;
-	assign PC_plus_4 = PC + 32'd4;
+	    wire [31:0] PC_plus_4;
+	    assign PC_plus_4 = PC + 32'd4;
 	
-	wire [31:0] Instruction;
-	InstructionMemory instruction_memory1(.Address(PC), 
-	                                      .Instruction(Instruction));
+	    wire [31:0] Instruction;
+	    InstructionMemory instruction_memory1(.Address(PC), 
+	                                          .Instruction(Instruction));
 	
-	wire [1:0] RegDst;
-	wire [1:0] PCSrc;
-	wire Branch;
-	wire MemRead;
-	wire [1:0] MemtoReg;
-	wire [3:0] ALUOp;
-	wire ExtOp;
-	wire LuOp;
-	wire MemWrite;
-	wire ALUSrc1;
-	wire ALUSrc2;
-	wire RegWrite;
+	    wire [1:0] RegDst;
+	    wire [1:0] PCSrc;
+	    wire Branch;
+	    wire MemRead;
+	    wire [1:0] MemtoReg;
+	    wire [3:0] ALUOp;
+	    wire ExtOp;
+	    wire LuOp;
+	    wire MemWrite;
+	    wire ALUSrc1;
+	    wire ALUSrc2;
+	    wire RegWrite;
 	
-	Control control1(
-		.OpCode(Instruction[31:26]), .Funct(Instruction[5:0]),
-		.PCSrc(PCSrc), .Branch(Branch), .RegWrite(RegWrite), .RegDst(RegDst), 
-		.MemRead(MemRead),	.MemWrite(MemWrite), .MemtoReg(MemtoReg),
-		.ALUSrc1(ALUSrc1), .ALUSrc2(ALUSrc2), .ExtOp(ExtOp), 
-		.LuOp(LuOp),	.ALUOp(ALUOp));
+	    Control control1(
+		    .OpCode(Instruction[31:26]), .Funct(Instruction[5:0]),
+		    .PCSrc(PCSrc), .Branch(Branch), .RegWrite(RegWrite), .RegDst(RegDst), 
+		    .MemRead(MemRead),	.MemWrite(MemWrite), .MemtoReg(MemtoReg),
+		    .ALUSrc1(ALUSrc1), .ALUSrc2(ALUSrc2), .ExtOp(ExtOp), 
+		    .LuOp(LuOp),	.ALUOp(ALUOp));
 	
-	wire [31:0] Databus1, Databus2, Databus3;
-	wire [4:0] Write_register;
-	assign Write_register = (RegDst == 2'b00)? Instruction[20:16]: 
-	                        (RegDst == 2'b01)? Instruction[15:11]: 5'b11111;
-	RegisterFile register_file1(.reset(reset), .clk(clk), .RegWrite(RegWrite), 
-		.Read_register1(Instruction[25:21]), 
-		.Read_register2(Instruction[20:16]), .Write_register(Write_register),
-		.Write_data(Databus3), .Read_data1(Databus1), .Read_data2(Databus2));
+	    wire [31:0] Databus1, Databus2, Databus3;
+	    wire [4:0] Write_register;
+	    assign Write_register = (RegDst == 2'b00)? Instruction[20:16]: 
+	                            (RegDst == 2'b01)? Instruction[15:11]: 5'b11111;
+	    RegisterFile register_file1(.reset(reset), .clk(clk), .RegWrite(RegWrite), 
+		    .Read_register1(Instruction[25:21]), 
+		    .Read_register2(Instruction[20:16]), .Write_register(Write_register),
+		    .Write_data(Databus3), .Read_data1(Databus1), .Read_data2(Databus2));
 	
-	wire [31:0] Ext_out;
-	assign Ext_out = {ExtOp? {16{Instruction[15]}}: 
-	                  16'h0000, Instruction[15:0]};
+	    wire [31:0] Ext_out;
+	    assign Ext_out = {ExtOp? {16{Instruction[15]}}: 
+	                      16'h0000, Instruction[15:0]};
 	
-	wire [31:0] LU_out;
-	assign LU_out = LuOp? {Instruction[15:0], 16'h0000}: Ext_out;
+	    wire [31:0] LU_out;
+	    assign LU_out = LuOp? {Instruction[15:0], 16'h0000}: Ext_out;
 	
-	wire [4:0] ALUCtl;
-	wire Sign;
-	ALUControl alu_control1(.ALUOp(ALUOp), .Funct(Instruction[5:0]), 
-	                        .ALUCtl(ALUCtl), .Sign(Sign));
+	    wire [4:0] ALUCtl;
+	    wire Sign;
+	    ALUControl alu_control1(.ALUOp(ALUOp), .Funct(Instruction[5:0]), 
+	                            .ALUCtl(ALUCtl), .Sign(Sign));
 	
-	wire [31:0] ALU_in1;
-	wire [31:0] ALU_in2;
-	wire [31:0] ALU_out;
-	wire Zero;
-	assign ALU_in1 = ALUSrc1? {17'h00000, Instruction[10:6]}: Databus1;
-	assign ALU_in2 = ALUSrc2? LU_out: Databus2;
-	ALU alu1(.in1(ALU_in1), .in2(ALU_in2), .ALUCtl(ALUCtl),
-	         .Sign(Sign), .out(ALU_out), .zero(Zero));
+	    wire [31:0] ALU_in1;
+	    wire [31:0] ALU_in2;
+	    wire [31:0] ALU_out;
+	    wire Zero;
+	    assign ALU_in1 = ALUSrc1? {17'h00000, Instruction[10:6]}: Databus1;
+	    assign ALU_in2 = ALUSrc2? LU_out: Databus2;
+	    ALU alu1(.in1(ALU_in1), .in2(ALU_in2), .ALUCtl(ALUCtl),
+	             .Sign(Sign), .out(ALU_out), .zero(Zero));
 	
-	wire [31:0] Read_data;
-	DataMemory data_memory1(.reset(reset), .clk(clk), .Address(ALU_out), 
-	                        .Write_data(Databus2), .Read_data(Read_data), 
-	                        .MemRead(MemRead), .MemWrite(MemWrite));
-	assign Databus3 = (MemtoReg == 2'b00)? ALU_out: 
-	                  (MemtoReg == 2'b01)? Read_data: PC_plus_4;
+	    wire [31:0] Read_data;
+	    DataMemory data_memory1(.reset(reset), .clk(clk), .Address(ALU_out), 
+	                            .Write_data(Databus2), .Read_data(Read_data), 
+	                            .MemRead(MemRead), .MemWrite(MemWrite));
+	    assign Databus3 = (MemtoReg == 2'b00)? ALU_out: 
+	                      (MemtoReg == 2'b01)? Read_data: PC_plus_4;
 	
-	wire [31:0] Jump_target;
-	assign Jump_target = {PC_plus_4[31:28], Instruction[25:0], 2'b00};
+	    wire [31:0] Jump_target;
+	    assign Jump_target = {PC_plus_4[31:28], Instruction[25:0], 2'b00};
 	
-	wire [31:0] Branch_target;
-	assign Branch_target = (Branch & Zero)? PC_plus_4 + {LU_out[29:0], 2'b00}: 
-	                       PC_plus_4;
+	    wire [31:0] Branch_target;
+	    assign Branch_target = (Branch & Zero)? PC_plus_4 + {LU_out[29:0], 2'b00}: 
+	                           PC_plus_4;
 	
-	assign PC_next = (PCSrc == 2'b00)? Branch_target: 
-	                 (PCSrc == 2'b01)? Jump_target: Databus1;
+	    assign PC_next = (PCSrc == 2'b00)? Branch_target: 
+	                     (PCSrc == 2'b01)? Jump_target: Databus1;
 
     endmodule
 	
     ```
 	
+2. 完成`Control.v`
+
+    ```verilog
+        
+    module Control(OpCode, Funct,
+	    PCSrc, Branch, RegWrite, RegDst, 
+	    MemRead, MemWrite, MemtoReg, 
+	    ALUSrc1, ALUSrc2, ExtOp, LuOp, ALUOp);
+	    input [5:0] OpCode;
+	    input [5:0] Funct;
+	    output [1:0] PCSrc;
+	    output Branch;
+	    output RegWrite;
+	    output [1:0] RegDst;
+	    output MemRead;
+	    output MemWrite;
+	    output [1:0] MemtoReg;
+	    output ALUSrc1;
+	    output ALUSrc2;
+	    output ExtOp;
+	    output LuOp;
+	    output [3:0] ALUOp;
+	
+	    // Your code below
+
+	    assign PCSrc = 
+		    (OpCode == 6'h02 || OpCode == 6'h03)? 2'b01:
+		    (OpCode == 6'h00 && (Funct == 6'h08 || Funct == 6'h09))? 2'b10:
+		    2'b00;
+
+	    assign Branch = (OpCode == 6'h04)? 1: 0;
+
+	    assign RegWrite = 
+		    (OpCode == 6'h2b || OpCode == 6'h04 || OpCode == 6'h02
+			    || (OpCode == 6'h00 && Funct == 6'h08))? 0: 1;
+
+	    assign RegDst = 
+		    (OpCode == 6'h03)? 2'b10:
+		    (OpCode == 6'h23 || OpCode == 6'h0f || OpCode == 6'h08
+			    || OpCode == 6'h09 || OpCode == 6'h0c || OpCode == 6'h0a
+			    || OpCode == 6'h0b)? 2'b01: 
+		    2'b00;
+
+	    assign MemRead = (OpCode == 6'h23)? 1: 0;
+
+	    assign MemWrite = (OpCode == 6'h2b)? 1: 0;
+
+	    assign MemtoReg = 
+		    (OpCode == 6'h03 || (OpCode == 6'h00 && Funct == 6'h09))? 2'b10:
+		    (OpCode == 6'h23)? 2'b01:
+		    2'b00;
+
+	    assign ALUSrc1 = 
+		    (OpCode == 6'h00 && (Funct == 6'h00 || Funct == 6'h02 
+			    || Funct == 6'h03))? 1: 0;
+
+	    assign ALUSrc2 = 
+		    (OpCode == 6'h23 || OpCode == 6'h2b || OpCode == 6'h0f
+			    || OpCode == 6'h08 || OpCode == 6'h09 || OpCode == 6'h0c
+			    || OpCode == 6'h0a || OpCode == 6'h0b)? 1: 0;
+
+	    assign ExtOp = (OpCode == 6'h0b)? 0: 1;
+
+	    assign LuOp = (OpCode == 6'h0f)? 1: 0;
+	
+	    // Your code above
+	
+	    assign ALUOp[2:0] = 
+		    (OpCode == 6'h00)? 3'b010: 
+		    (OpCode == 6'h04)? 3'b001: 
+		    (OpCode == 6'h0c)? 3'b100: 
+		    (OpCode == 6'h0a || OpCode == 6'h0b)? 3'b101: 
+		    3'b000;
+		
+	    assign ALUOp[3] = OpCode[0];
+	
+    endmodule
     
+    ```
     
     
     
