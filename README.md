@@ -43,11 +43,16 @@ beq, j, jal, jr, jalr
         jalr rd, rs
         ```
     
-    5. 利用`ExtOp`信号区分指令`[15:0]`是有符号型立即数还是无符号型立即数。
+    5. 利用`ExtOp`信号区分指令`[15:0]`是有符号型立即数（或地址偏移量）还是无符号型立即数。
         ```
         # ExtOp = 1
-        lui rt, imm
+        lw rt, offset(rs)
+        sw rt, offset(rs)
+        addi rt, rs, imm
+        addiu rt, rs, imm
+        andi rt, rs, imm
         slti rt, rs, imm
+        beq rs, rt, label
         
         # ExtOp = 0
         sltiu rt, rs, imm
